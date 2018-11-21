@@ -27,20 +27,30 @@ defmodule Romano.Tuple do
     {x, y, z, 0}
   end
 
-  def add({x1, y1, z1, w1}, {x2, y2, z2, w2}) do
-    {x1 + x2, y1 + y2, z1 + z2, w1 + w2}
+  def add(t1, t2) do
+    l1 = Tuple.to_list(t1)
+    l2 = Tuple.to_list(t2)
+    Enum.zip(l1, l2)
+    |> Enum.map(fn items -> Tuple.to_list(items) |> Enum.sum end)
+    |> List.to_tuple
   end
 
-  def subtract({x1, y1, z1, w1}, {x2, y2, z2, w2}) do
-    {x1 - x2, y1 - y2, z1 - z2, w1 - w2}
+  def subtract(t1, t2) do
+    l1 = Tuple.to_list(t1)
+    l2 = Tuple.to_list(t2)
+    Enum.zip(l1, l2)
+    |> Enum.map(fn items -> Tuple.to_list(items) |> Enum.reduce(fn x, acc -> acc - x end) end)
+    |> List.to_tuple
   end
 
   def negate({x, y, z, w}) do
     {0 - x, 0 - y, 0 - z, 0 - w}
   end
 
-  def multiply({x, y, z, w}, scalar) do
-    {x * scalar, y * scalar, z * scalar, w * scalar}
+  def multiply(t, scalar) when is_number(scalar) do
+    Tuple.to_list(t)
+    |> Enum.map(fn x -> x * scalar end)
+    |> List.to_tuple
   end
 
   def divide({x, y, z, w}, scalar) when scalar != 0 do
@@ -70,5 +80,11 @@ defmodule Romano.Tuple do
       x1 * y2 - y1 * x2,
       0
     }
+  end
+
+  def about_equal?(t1, t2) do
+    subtract(t1, t2)
+    |> Tuple.to_list
+    |> Enum.all?(fn x -> x < 0.000001 end)
   end
 end
