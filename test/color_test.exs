@@ -1,5 +1,5 @@
 defmodule ColorTest do
-  use ExUnit.Case
+  use ExUnit.Case, async: true
   alias Romano.Color
   alias Romano.Tuple
 

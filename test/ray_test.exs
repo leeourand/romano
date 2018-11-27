@@ -1,5 +1,5 @@
 defmodule RayTest do
-  use ExUnit.Case
+  use ExUnit.Case, async: true
   alias Romano.Ray
   alias Romano.Shape
   alias Romano.Intersection

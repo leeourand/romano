@@ -1,5 +1,5 @@
 defmodule MatrixTest do
-  use ExUnit.Case
+  use ExUnit.Case, async: true
   alias Romano.Matrix
 
   test "creating a matrix" do

@@ -1,5 +1,7 @@
 defmodule Romano.Shape do
-  defstruct name: nil, transform: Romano.Matrix.identity
+  alias Romano.Material
+  defstruct name: nil, transform: Romano.Matrix.identity, material: Material.new()
+
   def sphere do
     %__MODULE__{name: :sphere}
   end

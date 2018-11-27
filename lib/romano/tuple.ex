@@ -57,11 +57,11 @@ defmodule Romano.Tuple do
     {x / scalar, y / scalar, z / scalar, w / scalar}
   end
 
-  def magnitude({x, y, z, 0}) do
+  def magnitude({x, y, z, _}) do
     :math.sqrt(x * x + y * y + z * z)
   end
 
-  def normalize(vector = {x, y, z, 0}) do
+  def normalize(vector = {x, y, z, _}) do
     magnitude = magnitude(vector)
     {x / magnitude, y / magnitude, z / magnitude, 0}
   end
@@ -83,9 +83,15 @@ defmodule Romano.Tuple do
     }
   end
 
+  def reflect(v_in, normal) do
+    r = multiply(normal, 2)
+    |> multiply(dot(v_in, normal))
+    subtract(v_in, r)
+  end
+
   def about_equal?(t1, t2) do
     subtract(t1, t2)
     |> Tuple.to_list
-    |> Enum.all?(fn x -> x < 0.000001 end)
+    |> Enum.all?(fn x -> x < 0.0001 end)
   end
 end

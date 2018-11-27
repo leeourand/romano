@@ -1,5 +1,5 @@
 defmodule CanvasTest do
-  use ExUnit.Case
+  use ExUnit.Case, async: true
   alias Romano.Canvas
   alias Romano.Color
 

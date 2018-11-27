@@ -1,11 +1,15 @@
 defmodule Romano do
   alias Romano.Canvas
   alias Romano.Color
-  alias Romano.Shape
   alias Romano.Intersection
+  alias Romano.Light
+  alias Romano.Material
+  alias Romano.Matrix
   alias Romano.Ray
+  alias Romano.Shape
+  alias Romano.Sphere
   alias Romano.Transformation
-  import Romano.Tuple, only: [point: 3]
+  import Romano.Tuple, only: [point: 3, multiply: 2]
 
   def epsilon do
     0.000001
@@ -14,9 +18,11 @@ defmodule Romano do
   def draw_circle_scene do
     canvas_pixels = 100
     canvas = Canvas.new(canvas_pixels, canvas_pixels)
-    color = Color.new(1.0, 0, 0)
-    shape = Shape.sphere()
-            |> Shape.set_transform(Transformation.shearing(1, 0, 0, 0, 0, 0))
+    shape = put_in(Shape.sphere().material.color, Color.new(1, 1, 0))
+    |> Shape.set_transform(Transformation.shearing(0.6, 0, 0, 0, 0, 0))
+    light_position = point(10, -10, -10)
+    light_color = Color.new(1, 1, 1)
+    light = Light.point_light(light_position, light_color)
     wall_size = 7.0
     half = wall_size / 2
     wall_z = 10.0
@@ -32,13 +38,17 @@ defmodule Romano do
         hit = Ray.intersects(shape, r)
               |> Intersection.hit()
         if hit do
-          {x, y}
+          point = Ray.position(r, hit.t)
+          normal = Sphere.normal_at(hit.object, point)
+          eye = multiply(r.direction, -1)
+          color = Material.lighting(hit.object.material, light, point, eye, normal)
+          {x, y, color}
         end
       end
     end
     |> List.flatten
     |> Enum.filter(fn x -> x end)
-    |> Enum.reduce(canvas, fn {x, y}, canvas ->
+    |> Enum.reduce(canvas, fn {x, y, color}, canvas ->
       Canvas.write_pixel(canvas, {x, y}, color)
     end)
     |> Canvas.to_ppm

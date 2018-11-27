@@ -1,5 +1,5 @@
 defmodule TupleTest do
-  use ExUnit.Case
+  use ExUnit.Case, async: true
   alias Romano.Tuple
 
   test "vectors have a 0 w value" do
@@ -78,5 +78,17 @@ defmodule TupleTest do
     v2 = Tuple.vector(2, 3, 4)
     assert Tuple.cross(v1, v2) == Tuple.vector(-1, 2, -1)
     assert Tuple.cross(v2, v1) == Tuple.vector(1, -2, 1)
+  end
+
+  test "reflecting a vector approaching at 45 degrees" do
+    v = Tuple.vector(1, -1, 0)
+    n = Tuple.vector(0, 1, 0)
+    assert Tuple.reflect(v, n) == Tuple.vector(1, 1, 0)
+  end
+
+  test "reflecting a vector off a slanted surface" do
+    v = Tuple.vector(0, -1, 0)
+    n = Tuple.vector(:math.sqrt(2)/2, :math.sqrt(2)/2, 0)
+    assert Tuple.about_equal?(Tuple.reflect(v, n), Tuple.vector(1, 0, 0))
   end
 end

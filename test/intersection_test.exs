@@ -1,5 +1,5 @@
 defmodule IntersectionTest do
-  use ExUnit.Case
+  use ExUnit.Case, async: true
   alias Romano.Intersection
   alias Romano.Shape
 

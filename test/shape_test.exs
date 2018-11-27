@@ -1,5 +1,5 @@
 defmodule ShapeTest do
-  use ExUnit.Case
+  use ExUnit.Case, async: true
   alias Romano.Shape
   alias Romano.Matrix
   alias Romano.Ray

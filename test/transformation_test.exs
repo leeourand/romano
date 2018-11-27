@@ -1,8 +1,8 @@
 defmodule TransformationTest do
-  use ExUnit.Case
+  use ExUnit.Case, async: true
   alias Romano.Matrix
   alias Romano.Transformation
-  import Romano.Tuple, only: [point: 3, vector: 3]
+  import Romano.Tuple, only: [point: 3]
 
   test "muliplying a point by a translation matrix" do
     translation = Transformation.translation(5, -3, 2)
