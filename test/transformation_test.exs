@@ -2,6 +2,7 @@ defmodule TransformationTest do
   use ExUnit.Case
   alias Romano.Matrix
   alias Romano.Transformation
+  import Romano.Tuple, only: [point: 3, vector: 3]
 
   test "muliplying a point by a translation matrix" do
     translation = Transformation.translation(5, -3, 2)
@@ -45,5 +46,16 @@ defmodule TransformationTest do
     p = Romano.Tuple.point(2, 3, 4)
     translation = Transformation.shearing(1, 0, 0, 0, 0, 0)
     assert Matrix.multiply(translation, p) == Romano.Tuple.point(5, 3, 4)
+  end
+
+  test "chained transformations" do
+    p = point(1, 0, 1)
+    a = Transformation.rotation_x(:math.pi() / 2)
+    b = Transformation.scale(5, 5, 5)
+    c = Transformation.translation(10, 5, 7)
+    result =  Matrix.multiply(c, b)
+        |> Matrix.multiply(a)
+        |> Matrix.multiply(p)
+    assert result == point(15, 0, 7)
   end
 end

@@ -67,6 +67,7 @@ defmodule Romano.Tuple do
   end
 
   def dot({x1, y1, z1, w1}, {x2, y2, z2, w2}) do
+    1.0 *
     x1 * x2 +
     y1 * y2 +
     z1 * z2 +
@@ -75,9 +76,9 @@ defmodule Romano.Tuple do
 
   def cross({x1, y1, z1, _w1}, {x2, y2, z2, _w2}) do
     {
-      y1 * z2 - z1 * y2,
-      z1 * x2 - x1 * z2,
-      x1 * y2 - y1 * x2,
+      1.0 * y1 * z2 - z1 * y2,
+      1.0 * z1 * x2 - x1 * z2,
+      1.0 * x1 * y2 - y1 * x2,
       0
     }
   end

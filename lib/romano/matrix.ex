@@ -20,11 +20,12 @@ defmodule Romano.Matrix do
   end
 
   def equal?(a, b) do
-    a_vals = Map.values(a)
-             |> Enum.map(fn m -> Map.values(m) |> Enum.map(fn x -> Float.round(x * 1.0, 3) end) end)
-    b_vals = Map.values(b)
-             |> Enum.map(fn m -> Map.values(m) |> Enum.map(fn x -> Float.round(x * 1.0, 3) end) end)
-    a_vals == b_vals
+    Enum.all?(a, fn {i, row} ->
+      Enum.all?(row, fn {j, v} ->
+        bv = Map.fetch!(b, i) |> Map.fetch!(j)
+        Float.round(bv * 1.0, 5) == Float.round(v * 1.0, 5)
+      end)
+    end)
   end
 
   def rows(m) do
