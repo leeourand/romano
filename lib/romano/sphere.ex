@@ -9,7 +9,6 @@ defmodule Romano.Sphere do
     {x, y, z, _} = Matrix.invert(s.transform)
                     |> Matrix.transpose()
                     |> Matrix.multiply(object_normal)
-    world_normal = {x, y, z, 0}
-    |> Romano.Tuple.normalize()
+    {x, y, z, 0} |> Romano.Tuple.normalize()
   end
 end

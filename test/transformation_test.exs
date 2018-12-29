@@ -2,7 +2,7 @@ defmodule TransformationTest do
   use ExUnit.Case, async: true
   alias Romano.Matrix
   alias Romano.Transformation
-  import Romano.Tuple, only: [point: 3]
+  import Romano.Tuple, only: [point: 3, vector: 3]
 
   test "muliplying a point by a translation matrix" do
     translation = Transformation.translation(5, -3, 2)
@@ -57,5 +57,43 @@ defmodule TransformationTest do
         |> Matrix.multiply(a)
         |> Matrix.multiply(p)
     assert result == point(15, 0, 7)
+  end
+
+  test "the transformation matrix for the default world orientation" do
+    from = point(0, 0, 0)
+    to = point(0, 0, -1)
+    up = vector(0, 1, 0)
+    t = Transformation.view_transform(from, to, up)
+    assert t == Matrix.identity()
+  end
+
+  test "A view transformation matrix looking in the positive z direction" do
+    from = point(0, 0, 0)
+    to = point(0, 0, 1)
+    up = vector(0, 1, 0)
+    t = Transformation.view_transform(from, to, up)
+    assert Matrix.equal?(t, Transformation.scale(-1, 1, -1))
+  end
+
+  test "A view transformation moves the world" do
+    from = point(0, 0, 8)
+    to = point(0, 0, 0)
+    up = vector(0, 1, 0)
+    t = Transformation.view_transform(from, to, up)
+    assert t == Transformation.translation(0, 0, -8)
+  end
+
+  test "An arbitrary view transformation" do
+    from = point(1, 3, 2)
+    to = point(4, -2, 8)
+    up = vector(1, 1, 0)
+    t = Transformation.view_transform(from, to, up)
+    expected = Matrix.new([
+      [-0.50709, 0.50709, 0.67612, -2.36643],
+      [0.76772, 0.60609, 0.12122, -2.82843],
+      [-0.35857, 0.59761, -0.71714, 0.00],
+      [0.00, 0.00, 0.00, 1.00]
+    ])
+    assert Matrix.equal?(expected, t)
   end
 end

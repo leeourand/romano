@@ -1,5 +1,6 @@
 defmodule Romano do
   alias Romano.Canvas
+  alias Romano.Camera
   alias Romano.Color
   alias Romano.Intersection
   alias Romano.Light
@@ -9,7 +10,8 @@ defmodule Romano do
   alias Romano.Shape
   alias Romano.Sphere
   alias Romano.Transformation
-  import Romano.Tuple, only: [point: 3, multiply: 2]
+  alias Romano.World
+  import Romano.Tuple, only: [point: 3, vector: 3, multiply: 2]
 
   def epsilon do
     0.000001
@@ -53,5 +55,55 @@ defmodule Romano do
     end)
     |> Canvas.to_ppm
     File.write("out.ppm", data)
+  end
+
+  def draw_world_scene do
+    floor = Shape.sphere()
+            |> Shape.set_transform(Transformation.scale(10, 0.01, 10))
+            |> put_in([:material, :color], Color.new(1, 0.9, 0.9))
+            |> put_in([:material, :specular], 0)
+    left_wall = Shape.sphere()
+                |> Shape.set_transform(Transformation.translation(0, 0, 5) |>
+                                                                  Matrix.multiply(Transformation.rotation_y(-:math.pi() / 4)) |>
+                                                                  Matrix.multiply(Transformation.rotation_x(:math.pi() / 2)) |>
+                                                                  Matrix.multiply(Transformation.scale(10, 0.01, 10)))
+                |> put_in([:material], floor.material)
+    right_wall = Shape.sphere()
+                 |> Shape.set_transform(Transformation.translation(0, 0, 5) |>
+                                                                   Matrix.multiply(Transformation.rotation_y(:math.pi() / 4)) |>
+                                                                   Matrix.multiply(Transformation.rotation_x(:math.pi() / 2)) |>
+                                                                   Matrix.multiply(Transformation.scale(10, 0.01, 10)))
+                 |> put_in([:material], floor.material)
+
+    middle = Shape.sphere()
+             |> Shape.set_transform(Transformation.translation(-0.5, 1, 0.5))
+             |> put_in([:material, :color], Color.new(0.1, 1, 0.5))
+             |> put_in([:material, :diffuse], 0.7)
+             |> put_in([:material, :specular], 0.3)
+
+    right = Shape.sphere()
+            |> Shape.set_transform(Transformation.translation(1.5, 0.5, -0.5)
+                                   |> Matrix.multiply(Transformation.scale(0.5, 0.5, 0.5)))
+            |> put_in([:material, :color], Color.new(0.5, 1, 0.1))
+            |> put_in([:material, :diffuse], 0.7)
+            |> put_in([:material, :specular], 0.3)
+
+    left = Shape.sphere()
+           |> Shape.set_transform(Transformation.translation(-1.5, 0.33, -0.75)
+                                  |> Matrix.multiply(Transformation.scale(0.33, 0.33, 0.33)))
+           |> put_in([:material, :color], Color.new(1, 0.8, 0.1))
+           |> put_in([:material, :diffuse], 0.7)
+           |> put_in([:material, :specular], 0.3)
+
+    world = World.new
+            |> put_in([:light], Light.point_light(point(-10, 10, -10), Color.new(1, 1, 1)))
+            |> put_in([:objects], [floor, left_wall, right_wall, middle, right, left])
+
+    camera = Camera.new(400, 200, :math.pi() / 3)
+             |> put_in([:transform], Transformation.view_transform(point(0, 1.5, -5), point(0, 1, 0), vector(0, 1, 0)))
+
+    data = Camera.render(camera, world)
+           |> Canvas.to_ppm
+    File.write("world_out.ppm", data)
   end
 end

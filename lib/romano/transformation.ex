@@ -1,5 +1,6 @@
 defmodule Romano.Transformation do
   alias Romano.Matrix
+  import Romano.Tuple, only: [subtract: 2, normalize: 1, cross: 2, x: 1, y: 1, z: 1]
 
   def translation(x, y, z) do
     Matrix.new([
@@ -53,5 +54,21 @@ defmodule Romano.Transformation do
       [zx, zy, 1, 0],
       [0, 0, 0, 1]
     ])
+  end
+
+  def view_transform(from, to, up) do
+    forward = subtract(to, from)
+              |> normalize
+    upn = normalize(up)
+    left = cross(forward, upn)
+    true_up = cross(left, forward)
+    orientation = Matrix.new([
+      [x(left), y(left), z(left), 0],
+      [x(true_up), y(true_up), z(true_up), 0],
+      [-x(forward), -y(forward), -z(forward), 0],
+      [0, 0, 0, 1]
+    ])
+    t = translation(-x(from), -y(from), -z(from))
+    Matrix.multiply(orientation, t)
   end
 end
