@@ -1,6 +1,7 @@
 defmodule Romano.Material do
   alias Romano.Color
   alias Romano.Tuple
+  alias Romano.World
   defstruct color: Color.new(1, 1, 1), ambient: 0.1, diffuse: 0.9, specular: 0.9, shininess: 200
   use Accessible
 
@@ -8,7 +9,7 @@ defmodule Romano.Material do
     %__MODULE__{}
   end
 
-  def lighting(material, light, point, eyev, normalv) do
+  def lighting(material, light, point, eyev, normalv, in_shadow) do
     effective_color = Color.multiply(material.color, light.intensity)
     lightv = Tuple.subtract(light.position, point)
               |> Tuple.normalize()
@@ -19,12 +20,17 @@ defmodule Romano.Material do
                 |> Tuple.reflect(normalv)
     reflect_dot_eye = Tuple.dot(reflectv, eyev)
     specular = calc_specular(light_dot_normal, reflect_dot_eye, material, light)
-    Color.add(ambient, diffuse)
-    |> Color.add(specular)
+    if in_shadow do
+      ambient
+    else
+      Color.add(ambient, diffuse)
+      |> Color.add(specular)
+    end
   end
 
   def shade_hit(world, comps) do
-    lighting(comps.object.material, world.light, comps.point, comps.eyev, comps.normalv)
+    shadowed = World.is_shadowed(world, comps.over_point)
+    lighting(comps.object.material, world.light, comps.over_point, comps.eyev, comps.normalv, shadowed)
   end
 
   defp calc_diffuse(light_dot_normal, _material_diffuse, _effective_color) when light_dot_normal < 0 do

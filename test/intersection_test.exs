@@ -3,7 +3,8 @@ defmodule IntersectionTest do
   alias Romano.Intersection
   alias Romano.Shape
   alias Romano.Ray
-  import Romano.Tuple, only: [point: 3, vector: 3]
+  alias Romano.Transformation
+  import Romano.Tuple, only: [point: 3, vector: 3, z: 1]
 
   test "creating an intersection" do
     s = Shape.sphere()
@@ -62,5 +63,15 @@ defmodule IntersectionTest do
     assert comps.point == point(0, 0, -1)
     assert comps.eyev == vector(0, 0, -1)
     assert comps.normalv == vector(0, 0, -1)
+  end
+
+  test "the hit should offset the point" do
+    r = Ray.new(point(0, 0, -5), vector(0, 0, 1))
+    shape = Shape.sphere()
+            |> Shape.set_transform(Transformation.translation(0, 0, 1))
+    i = Intersection.new(5, shape)
+    comps = Intersection.prepare_computations(i, r)
+    assert z(comps.over_point) < (-Romano.epsilon() / 2)
+    assert z(comps.point) > z(comps.over_point)
   end
 end

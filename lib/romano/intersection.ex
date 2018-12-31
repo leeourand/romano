@@ -2,6 +2,7 @@ defmodule Romano.Intersection do
   alias Romano.Computations
   alias Romano.Ray
   alias Romano.Shape
+  import Romano.Tuple, only: [add: 2, multiply: 2]
   defstruct t: nil, object: nil
 
   def new(t, object) do
@@ -15,19 +16,26 @@ defmodule Romano.Intersection do
 
   def prepare_computations(intersection, ray) do
     point = Ray.position(ray, intersection.t)
+    normalv = Shape.normal_at(intersection.object, point)
     %Computations{
       t: intersection.t,
       object: intersection.object,
       point: point,
+      over_point: multiply(normalv, Romano.epsilon()) |> add(point),
       eyev: Romano.Tuple.multiply(ray.direction, -1),
-      normalv: Shape.normal_at(intersection.object, point)
+      normalv: normalv
     }
     |> determine_insidedness
   end
 
   defp determine_insidedness(comps) do
     if Romano.Tuple.dot(comps.normalv, comps.eyev) < 0 do
-      %{comps | inside: true, normalv: Romano.Tuple.multiply(comps.normalv, -1)}
+      normalv = multiply(comps.normalv, -1)
+      %{comps |
+        inside: true,
+        normalv: normalv,
+        over_point: multiply(normalv, Romano.epsilon()) |> add(comps.point)
+      }
     else
       comps
     end

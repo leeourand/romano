@@ -43,7 +43,7 @@ defmodule Romano do
           point = Ray.position(r, hit.t)
           normal = Sphere.normal_at(hit.object, point)
           eye = multiply(r.direction, -1)
-          color = Material.lighting(hit.object.material, light, point, eye, normal)
+          color = Material.lighting(hit.object.material, light, point, eye, normal, false)
           {x, y, color}
         end
       end

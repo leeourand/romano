@@ -20,7 +20,7 @@ defmodule MaterialTest do
     eyev = vector(0, 0, -1)
     normalv = vector(0, 0, -1)
     light = Light.point_light(point(0, 0, -10), Color.new(1, 1, 1))
-    assert Material.lighting(m, light, position, eyev, normalv) == Color.new(1.9, 1.9, 1.9)
+    assert Material.lighting(m, light, position, eyev, normalv, false) == Color.new(1.9, 1.9, 1.9)
   end
 
   test "lighting with the eye between the light and the surface, eye offset by 45 degrees" do
@@ -29,7 +29,7 @@ defmodule MaterialTest do
     eyev = vector(0, :math.sqrt(2)/2, :math.sqrt(2)/2)
     normalv = vector(0, 0, -1)
     light = Light.point_light(point(0, 0, -10), Color.new(1, 1, 1))
-    assert Material.lighting(m, light, position, eyev, normalv) == Color.new(1.0, 1.0, 1.0)
+    assert Material.lighting(m, light, position, eyev, normalv, false) == Color.new(1.0, 1.0, 1.0)
   end
 
   test "lighting with the eye opposite the surface, light offset by 45 degrees " do
@@ -38,7 +38,7 @@ defmodule MaterialTest do
     eyev = vector(0, 0, -1)
     normalv = vector(0, 0, -1)
     light = Light.point_light(point(0, 10, -10), Color.new(1, 1, 1))
-    assert about_equal?(Material.lighting(m, light, position, eyev, normalv), Color.new(0.7364, 0.7364, 0.7364))
+    assert about_equal?(Material.lighting(m, light, position, eyev, normalv, false), Color.new(0.7364, 0.7364, 0.7364))
   end
 
   test "lighting with the eye in the path of the reflection vector" do
@@ -47,7 +47,7 @@ defmodule MaterialTest do
     eyev = vector(0, -:math.sqrt(2)/2, -:math.sqrt(2)/2)
     normalv = vector(0, 0, -1)
     light = Light.point_light(point(0, 10, -10), Color.new(1, 1, 1))
-    assert about_equal?(Material.lighting(m, light, position, eyev, normalv), Color.new(1.6364, 1.6364, 1.6364))
+    assert about_equal?(Material.lighting(m, light, position, eyev, normalv, false), Color.new(1.6364, 1.6364, 1.6364))
   end
 
   test "lighting with the eye behind the surface" do
@@ -56,6 +56,17 @@ defmodule MaterialTest do
     eyev = vector(0, 0, -1)
     normalv = vector(0, 0, -1)
     light = Light.point_light(point(0, 0, 10), Color.new(1, 1, 1))
-    assert Material.lighting(m, light, position, eyev, normalv) == Color.new(0.1, 0.1, 0.1)
+    assert Material.lighting(m, light, position, eyev, normalv, false) == Color.new(0.1, 0.1, 0.1)
+  end
+
+  test "lighting with the surface in shadow" do
+    m = Material.new()
+    position = point(0, 0, 0)
+    eyev = vector(0, 0, -1)
+    normalv = vector(0, 0, -1)
+    light = Light.point_light(point(0, 0, -10), Color.new(1, 1, 1))
+    in_shadow = true
+    result = Material.lighting(m, light, position, eyev, normalv, in_shadow)
+    assert result == Color.new(0.1, 0.1, 0.1)
   end
 end

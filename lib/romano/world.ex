@@ -6,7 +6,7 @@ defmodule Romano.World do
   alias Romano.Ray
   alias Romano.Shape
   alias Romano.Transformation
-  import Romano.Tuple, only: [point: 3]
+  import Romano.Tuple, only: [point: 3, subtract: 2, magnitude: 1, normalize: 1]
 
   defstruct objects: [], light: nil
   use Accessible
@@ -39,5 +39,15 @@ defmodule Romano.World do
               |> Intersection.prepare_computations(ray)
       Material.shade_hit(world, comps)
     end
+  end
+
+  def is_shadowed(world, point) do
+    v = subtract(world.light.position, point)
+    distance = magnitude(v)
+    direction = normalize(v)
+    r = Ray.new(point, direction)
+    h = Ray.intersect_world(world, r)
+        |> Intersection.hit
+    h && h.t < distance
   end
 end
