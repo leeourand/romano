@@ -106,4 +106,75 @@ defmodule Romano do
            |> Canvas.to_ppm
     File.write("world_out.ppm", data)
   end
+
+  def draw_snowman_scene do
+    floor = Shape.sphere()
+            |> Shape.set_transform(Transformation.scale(10, 0.01, 10))
+            |> put_in([:material, :color], Color.new(1, 0.9, 0.9))
+            |> put_in([:material, :specular], 0)
+    left_wall = Shape.sphere()
+                |> Shape.set_transform(Transformation.translation(0, 0, 5) |>
+                                                                  Matrix.multiply(Transformation.rotation_y(-:math.pi() / 4)) |>
+                                                                  Matrix.multiply(Transformation.rotation_x(:math.pi() / 2)) |>
+                                                                  Matrix.multiply(Transformation.scale(10, 0.01, 10)))
+                |> put_in([:material], floor.material)
+    right_wall = Shape.sphere()
+                 |> Shape.set_transform(Transformation.translation(0, 0, 5) |>
+                                                                   Matrix.multiply(Transformation.rotation_y(:math.pi() / 4)) |>
+                                                                   Matrix.multiply(Transformation.rotation_x(:math.pi() / 2)) |>
+                                                                   Matrix.multiply(Transformation.scale(10, 0.01, 10)))
+                 |> put_in([:material], floor.material)
+
+    bottom = Shape.sphere()
+             |> Shape.set_transform(Transformation.translation(0.7, 0.5, -1.5))
+             |> put_in([:material, :color], Color.new(1, 1, 1))
+             |> put_in([:material, :diffuse], 0.7)
+             |> put_in([:material, :specular], 0.3)
+
+    middle = Shape.sphere()
+            |> Shape.set_transform(Transformation.translation(0.7, 1.83, -1.5)
+                                   |> Matrix.multiply(Transformation.scale(0.66, 0.66, 0.66)))
+            |> put_in([:material, :color], Color.new(1, 1, 1))
+            |> put_in([:material, :diffuse], 0.7)
+            |> put_in([:material, :specular], 0.3)
+
+    top = Shape.sphere()
+           |> Shape.set_transform(Transformation.translation(0.7, 2.67, -1.5)
+                                  |> Matrix.multiply(Transformation.scale(0.36, 0.36, 0.36)))
+           |> put_in([:material, :color], Color.new(1, 1, 1))
+           |> put_in([:material, :diffuse], 0.7)
+           |> put_in([:material, :specular], 0.3)
+
+    leye = Shape.sphere
+           |> Shape.set_transform(Transformation.translation(0.58, 2.75, -1.79)
+                                  |> Matrix.multiply(Transformation.scale(0.06, 0.06, 0.06)))
+           |> put_in([:material, :color], Color.new(0.1, 0.1, 0.1))
+           |> put_in([:material, :diffuse], 0.91)
+           |> put_in([:material, :specular], 0.01)
+
+    reye = Shape.sphere
+           |> Shape.set_transform(Transformation.translation(0.82, 2.75, -1.79)
+                                  |> Matrix.multiply(Transformation.scale(0.06, 0.06, 0.06)))
+           |> put_in([:material, :color], Color.new(0.1, 0.1, 0.1))
+           |> put_in([:material, :diffuse], 0.91)
+           |> put_in([:material, :specular], 0.01)
+
+    carrot = Shape.sphere
+             |> Shape.set_transform(Transformation.translation(0.7, 2.69, -1.79)
+                                    |> Matrix.multiply(Transformation.scale(0.08, 0.08, 0.5)))
+             |> put_in([:material, :color], Color.new(1.0, 0.5, 0.1))
+             |> put_in([:material, :diffuse], 0.81)
+             |> put_in([:material, :specular], 0.21)
+
+    world = World.new
+            |> put_in([:light], Light.point_light(point(10, 10, -10), Color.new(1.0, 1.0, 1.0)))
+            |> put_in([:objects], [floor, left_wall, right_wall, bottom, middle, top, leye, reye, carrot])
+
+    camera = Camera.new(300, 400, :math.pi() / 3)
+             |> put_in([:transform], Transformation.view_transform(point(0.0, 1.8, -5.0), point(0.0, 1.5, 0), vector(0, 1, 0)))
+
+    data = Camera.render(camera, world)
+           |> Canvas.to_ppm
+    File.write("world_out.ppm", data)
+  end
 end
