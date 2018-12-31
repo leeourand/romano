@@ -55,11 +55,15 @@ defmodule Romano.Camera do
     camera = %{camera | inverse_transform: Matrix.invert(camera.transform)}
     for y <- 0..camera.vsize - 1 do
       for x <- 0..camera.hsize - 1 do
-        ray = ray_for_pixel(camera, x, y)
-        {x, y, World.color_at(world, ray)}
+        Task.async(fn ->
+          ray = ray_for_pixel(camera, x, y)
+          {x, y, World.color_at(world, ray)}
+        end)
       end
     end
     |> List.flatten
+    |> Task.yield_many(40000)
+    |> Enum.map(fn {task, {:ok, res}} -> res end)
     |> Enum.reduce(image, fn ({x, y, color}, c) ->
       Canvas.write_pixel(c, {x, y}, color)
     end)
