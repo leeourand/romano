@@ -12,7 +12,7 @@ defmodule Romano.Ray do
   end
 
   def intersects(s, ray) do
-    ray = transform(ray, Matrix.invert(s.transform))
+    ray = transform(ray, s.inverted_transform)
     center_to_ray = Romano.Tuple.subtract(ray.origin, Romano.Tuple.point(0,0,0))
     a = Romano.Tuple.dot(ray.direction, ray.direction)
     b = 2.0 * Romano.Tuple.dot(ray.direction, center_to_ray)

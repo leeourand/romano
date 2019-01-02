@@ -4,7 +4,7 @@ defmodule Romano.Camera do
   alias Romano.Ray
   alias Romano.World
   import Romano.Tuple, only: [point: 3, normalize: 1, subtract: 2]
-  defstruct hsize: 0, vsize: 0, field_of_view: 0, transform: Matrix.identity(), half_view: 0, aspect: 0
+  defstruct hsize: 0, vsize: 0, field_of_view: 0, transform: Matrix.identity(), half_view: 0, aspect: 0, inverse_transform: nil
   use Accessible
 
   def new(hsize, vsize, field_of_view) do
@@ -41,9 +41,9 @@ defmodule Romano.Camera do
     yoffset = (py + 0.5) * pixel_size(camera)
     world_x = half_width(camera) - xoffset
     world_y = half_height(camera) - yoffset
-    pixel = Matrix.invert(camera.transform)
+    pixel = camera.inverse_transform
             |> Matrix.multiply(point(world_x, world_y, -1))
-    origin = Matrix.invert(camera.transform)
+    origin = camera.inverse_transform
              |> Matrix.multiply(point(0, 0, 0))
     direction = subtract(pixel, origin)
                 |> normalize
@@ -52,6 +52,7 @@ defmodule Romano.Camera do
 
   def render(camera, world) do
     image = Canvas.new(camera.hsize, camera.vsize)
+    camera = %{camera | inverse_transform: Matrix.invert(camera.transform)}
     for y <- 0..camera.vsize - 1 do
       for x <- 0..camera.hsize - 1 do
         ray = ray_for_pixel(camera, x, y)
