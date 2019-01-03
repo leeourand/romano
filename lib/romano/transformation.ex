@@ -32,8 +32,8 @@ defmodule Romano.Transformation do
   def rotation_y(rads) do
     Matrix.new([
       [:math.cos(rads), 0, :math.sin(rads), 0],
-      [0, :math.sin(rads), :math.cos(rads) * -1, 0],
-      [:math.sin(rads) * -1, 0, :math.cos(rads), 0],
+      [0, 1, 0, 0],
+      [-:math.sin(rads), 0, :math.cos(rads), 0],
       [0, 0, 0, 1]
     ])
   end

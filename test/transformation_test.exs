@@ -36,7 +36,7 @@ defmodule TransformationTest do
     assert Romano.Tuple.about_equal?(Matrix.multiply(translation, p), Romano.Tuple.point(0, :math.sqrt(2) / 2, :math.sqrt(2) / 2))
 
     translation = Transformation.rotation_y(:math.pi() / 4)
-    assert Romano.Tuple.about_equal?(Matrix.multiply(translation, p), Romano.Tuple.point(:math.sqrt(2) / 2, :math.sqrt(2) / 2, 0))
+    assert Matrix.multiply(translation, p) == Romano.Tuple.point( 0, 1, 0)
 
     translation = Transformation.rotation_z(:math.pi() / 4)
     assert Romano.Tuple.about_equal?(Matrix.multiply(translation, p), Romano.Tuple.point(:math.sqrt(2) / -2, :math.sqrt(2) / 2, 0))
