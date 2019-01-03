@@ -12,7 +12,7 @@ defmodule Romano.Material do
 
   def lighting(material, object, light, point, eyev, normalv, in_shadow) do
     color = if material.pattern do
-      Pattern.stripe_at_object(material.pattern, object, point)
+      Pattern.pattern_at_shape(material.pattern, object, point)
     else
       material.color
     end
