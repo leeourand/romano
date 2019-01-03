@@ -41,7 +41,7 @@ defmodule Romano do
               |> Intersection.hit()
         if hit do
           point = Ray.position(r, hit.t)
-          normal = Sphere.normal_at(hit.object, point)
+          normal = Shape.normal_at(hit.object, point)
           eye = multiply(r.direction, -1)
           color = Material.lighting(hit.object.material, light, point, eye, normal, false)
           {x, y, color}
