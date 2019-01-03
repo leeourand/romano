@@ -30,14 +30,14 @@ defmodule Romano.World do
   end
 
   def color_at(world, ray) do
-    intersections = Ray.intersect_world(world, ray)
-    if Enum.count(intersections) == 0 do
-      Color.new(0, 0, 0)
-    else
-      comps = intersections
-              |> Intersection.hit
+    hit = Ray.intersect_world(world, ray)
+          |> Intersection.hit
+    if hit do
+      comps = hit
               |> Intersection.prepare_computations(ray)
       Material.shade_hit(world, comps)
+    else
+      Color.new(0, 0, 0)
     end
   end
 
