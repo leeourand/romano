@@ -63,7 +63,7 @@ defmodule Romano.Camera do
     end
     |> List.flatten
     |> Task.yield_many(40000)
-    |> Enum.map(fn {task, {:ok, res}} -> res end)
+    |> Enum.map(fn {_, {:ok, res}} -> res end)
     |> Enum.reduce(image, fn ({x, y, color}, c) ->
       Canvas.write_pixel(c, {x, y}, color)
     end)

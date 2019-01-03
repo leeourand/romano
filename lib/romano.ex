@@ -170,8 +170,8 @@ defmodule Romano do
             |> put_in([:light], Light.point_light(point(10, 10, -10), Color.new(1.0, 1.0, 1.0)))
             |> put_in([:objects], [floor, left_wall, right_wall, bottom, middle, top, leye, reye, carrot])
 
-    camera = Camera.new(100, 150, :math.pi() / 3)
-             |> put_in([:transform], Transformation.view_transform(point(0.0, 1.8, -5.0), point(0.0, 1.5, 0), vector(0, 1, 0)))
+    camera = Camera.new(600, 400, :math.pi() / 3)
+             |> put_in([:transform], Transformation.view_transform(point(1.5, 1.8, -5.5), point(0.0, 1.5, 0), vector(0, 1, 0)))
 
     data = Camera.render(camera, world)
            |> Canvas.to_ppm
