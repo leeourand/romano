@@ -9,7 +9,6 @@ defmodule Romano do
   alias Romano.Pattern
   alias Romano.Ray
   alias Romano.Shape
-  alias Romano.Sphere
   alias Romano.Transformation
   alias Romano.World
   import Romano.Tuple, only: [point: 3, vector: 3, multiply: 2]
@@ -60,26 +59,34 @@ defmodule Romano do
 
   def draw_spheres_scene do
     floor = Shape.plane()
-            |> put_in([:material, :pattern], Pattern.stripe(Color.new(0, 0, 0), Color.new(1, 1, 1)))
+            |> put_in([:material, :pattern], Pattern.checkers(Color.new(1, 1, 1), Color.new(0.95, 0.95, 0.95))
+                                             |> Pattern.set_transform(Transformation.rotation_y(:math.pi() /6)))
             |> put_in([:material, :specular], 0)
 
     middle = Shape.sphere()
-             |> Shape.set_transform(Transformation.translation(-0.5, 1, 0.5))
-             |> put_in([:material, :color], Color.new(0.1, 1, 0.5))
+             |> Shape.set_transform(Transformation.translation(-0.5, 1, 0.5)
+                                    |> Matrix.multiply(Transformation.rotation_z(:math.pi()/6)))
+             |> put_in([:material, :pattern], Pattern.checkers(Color.new(0, 1, 1), Color.new(0.1, 0.2, 0.95))
+                                              |> Pattern.set_transform(Transformation.scale(0.4, 0.4, 0.4)))
              |> put_in([:material, :diffuse], 0.7)
              |> put_in([:material, :specular], 0.3)
 
     right = Shape.sphere()
             |> Shape.set_transform(Transformation.translation(1.5, 0.5, -0.5)
-                                   |> Matrix.multiply(Transformation.scale(0.5, 0.5, 0.5)))
-            |> put_in([:material, :color], Color.new(0.5, 1, 0.1))
+                                   |> Matrix.multiply(Transformation.scale(0.5, 0.5, 0.5))
+                                   |> Matrix.multiply(Transformation.rotation_x(:math.pi()/4))
+                                   |> Matrix.multiply(Transformation.rotation_z(:math.pi()/4)))
+            |> put_in([:material, :pattern], Pattern.gradient(Color.new(0, 1, 0.1), Color.new(0.1, 1, 0.95))
+                                             |> Pattern.set_transform(Transformation.scale(2, 2, 2)))
             |> put_in([:material, :diffuse], 0.7)
             |> put_in([:material, :specular], 0.3)
 
     left = Shape.sphere()
            |> Shape.set_transform(Transformation.translation(-1.5, 0.33, -0.75)
                                   |> Matrix.multiply(Transformation.scale(0.33, 0.33, 0.33)))
-           |> put_in([:material, :color], Color.new(1, 0.8, 0.1))
+           |> put_in([:material, :pattern], Pattern.stripe(Color.new(1, 0.1, 0.1), Color.new(1, 1, 0))
+                                            |> Pattern.set_transform(Transformation.rotation_y(:math.pi()/6)
+                                                                     |> Matrix.multiply(Transformation.scale(0.4, 0.4, 0.4))))
            |> put_in([:material, :diffuse], 0.7)
            |> put_in([:material, :specular], 0.3)
 
@@ -87,7 +94,7 @@ defmodule Romano do
             |> put_in([:light], Light.point_light(point(-10, 10, -10), Color.new(1, 1, 1)))
             |> put_in([:objects], [floor, middle, right, left])
 
-    camera = Camera.new(400, 200, :math.pi() / 3)
+    camera = Camera.new(600, 400, :math.pi() / 3)
              |> put_in([:transform], Transformation.view_transform(point(0, 1.5, -5), point(0, 1, 0), vector(0, 1, 0)))
 
     data = Camera.render(camera, world)

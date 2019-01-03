@@ -79,4 +79,42 @@ defmodule PatternTest do
         |> Pattern.set_transform(Transformation.translation(1, 2, 3))
     assert p.transform == Transformation.translation(1, 2, 3)
   end
+
+  test "a gradient lienarly interpolates between colors" do
+    pattern = Pattern.gradient(white(), black())
+    assert Pattern.pattern_at(pattern, point(0, 0, 0)) == white()
+    assert Pattern.pattern_at(pattern, point(0.25, 0, 0)) == Color.new(0.75, 0.75, 0.75)
+    assert Pattern.pattern_at(pattern, point(0.5, 0, 0)) == Color.new(0.5, 0.5, 0.5)
+    assert Pattern.pattern_at(pattern, point(0.75, 0, 0)) == Color.new(0.25, 0.25, 0.25)
+  end
+
+  test "a ring should extend in both x and z" do
+    pattern = Pattern.ring(white(), black())
+    assert Pattern.pattern_at(pattern, point(0, 0, 0)) == white()
+    assert Pattern.pattern_at(pattern, point(1, 0, 0)) == black()
+    assert Pattern.pattern_at(pattern, point(0, 0, 1)) == black()
+    # 0.708 = just slightly more than sqrt(2)/2
+    assert Pattern.pattern_at(pattern, point(0.708, 0, 0.708)) == black()
+  end
+
+  test "checkers should repeat in x" do
+    pattern = Pattern.checkers(white(), black())
+    assert Pattern.pattern_at(pattern, point(0, 0, 0)) == white()
+    assert Pattern.pattern_at(pattern, point(0.99, 0, 0)) == white()
+    assert Pattern.pattern_at(pattern, point(1.01, 0, 0)) == black()
+  end
+
+  test "checkers should repeat in y" do
+    pattern = Pattern.checkers(white(), black())
+    assert Pattern.pattern_at(pattern, point(0, 0, 0)) == white()
+    assert Pattern.pattern_at(pattern, point(0, 0.99, 0)) == white()
+    assert Pattern.pattern_at(pattern, point(0, 1.01, 0)) == black()
+  end
+
+  test "checkers should repeat in z" do
+    pattern = Pattern.checkers(white(), black())
+    assert Pattern.pattern_at(pattern, point(0, 0, 0)) == white()
+    assert Pattern.pattern_at(pattern, point(0, 0, 0.99)) == white()
+    assert Pattern.pattern_at(pattern, point(0, 0, 1.01)) == black()
+  end
 end
