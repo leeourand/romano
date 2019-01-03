@@ -4,7 +4,7 @@ defmodule Romano.Camera do
   alias Romano.Ray
   alias Romano.World
   import Romano.Tuple, only: [point: 3, normalize: 1, subtract: 2]
-  defstruct hsize: 0, vsize: 0, field_of_view: 0, transform: Matrix.identity(), half_view: 0, aspect: 0, inverse_transform: nil
+  defstruct hsize: 0, vsize: 0, field_of_view: 0, transform: Matrix.identity(), half_view: 0, aspect: 0, inverse_transform: Matrix.identity()
   use Accessible
 
   def new(hsize, vsize, field_of_view) do
@@ -14,6 +14,10 @@ defmodule Romano.Camera do
       half_view: :math.tan(field_of_view / 2),
       aspect: hsize * 1.0 / vsize
     }
+  end
+
+  def set_transform(camera, t) do
+    %{camera | transform: t, inverse_transform: Matrix.invert(t)}
   end
 
   def pixel_size(camera) do

@@ -48,7 +48,7 @@ defmodule CameraTest do
     c = Camera.new(201, 101, :math.pi() / 2)
     t = Transformation.rotation_y(:math.pi() / 4)
         |> Matrix.multiply(Transformation.translation(0, -2, 5))
-    c = %{c | transform: t}
+    c = Camera.set_transform(c, t)
     r = Camera.ray_for_pixel(c, 100, 50)
     assert about_equal?(r.origin, point(0, 2, -5))
 
