@@ -33,6 +33,8 @@ defmodule Mix.Tasks.Draw do
     case scene do
       "snowman" ->
         Romano.draw_snowman_scene()
+      "spheres" ->
+        Romano.draw_spheres_scene()
       _ ->
         Romano.draw_circle_scene()
     end

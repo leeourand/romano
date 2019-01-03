@@ -57,23 +57,10 @@ defmodule Romano do
     File.write("out.ppm", data)
   end
 
-  def draw_world_scene do
-    floor = Shape.sphere()
-            |> Shape.set_transform(Transformation.scale(10, 0.01, 10))
+  def draw_spheres_scene do
+    floor = Shape.plane()
             |> put_in([:material, :color], Color.new(1, 0.9, 0.9))
             |> put_in([:material, :specular], 0)
-    left_wall = Shape.sphere()
-                |> Shape.set_transform(Transformation.translation(0, 0, 5) |>
-                                                                  Matrix.multiply(Transformation.rotation_y(-:math.pi() / 4)) |>
-                                                                  Matrix.multiply(Transformation.rotation_x(:math.pi() / 2)) |>
-                                                                  Matrix.multiply(Transformation.scale(10, 0.01, 10)))
-                |> put_in([:material], floor.material)
-    right_wall = Shape.sphere()
-                 |> Shape.set_transform(Transformation.translation(0, 0, 5) |>
-                                                                   Matrix.multiply(Transformation.rotation_y(:math.pi() / 4)) |>
-                                                                   Matrix.multiply(Transformation.rotation_x(:math.pi() / 2)) |>
-                                                                   Matrix.multiply(Transformation.scale(10, 0.01, 10)))
-                 |> put_in([:material], floor.material)
 
     middle = Shape.sphere()
              |> Shape.set_transform(Transformation.translation(-0.5, 1, 0.5))
@@ -97,7 +84,7 @@ defmodule Romano do
 
     world = World.new
             |> put_in([:light], Light.point_light(point(-10, 10, -10), Color.new(1, 1, 1)))
-            |> put_in([:objects], [floor, left_wall, right_wall, middle, right, left])
+            |> put_in([:objects], [floor, middle, right, left])
 
     camera = Camera.new(400, 200, :math.pi() / 3)
              |> put_in([:transform], Transformation.view_transform(point(0, 1.5, -5), point(0, 1, 0), vector(0, 1, 0)))

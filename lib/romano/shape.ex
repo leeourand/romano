@@ -1,4 +1,5 @@
 defmodule Romano.Shape do
+  alias Romano.Plane
   alias Romano.Sphere
   alias Romano.Material
   alias Romano.Matrix
@@ -12,6 +13,10 @@ defmodule Romano.Shape do
 
   def sphere do
     %__MODULE__{name: :sphere}
+  end
+
+  def plane do
+    %__MODULE__{name: :plane}
   end
 
   def set_transform(shape, transform) do
@@ -36,7 +41,11 @@ defmodule Romano.Shape do
     Sphere.local_normal_at(shape, local_point)
   end
 
-  def local_normal_at(shape = %__MODULE__{name: :test}, local_point) do
+  def local_normal_at(shape = %__MODULE__{name: :plane}, local_point) do
+    Plane.local_normal_at(shape, local_point)
+  end
+
+  def local_normal_at(%__MODULE__{name: :test}, local_point) do
     {x, y, z, _} = local_point
     {x, y, z, 0}
   end
@@ -45,7 +54,11 @@ defmodule Romano.Shape do
     Sphere.local_intersect(shape, ray)
   end
 
-  def local_intersect(shape = %__MODULE__{name: :test}, ray) do
+  def local_intersect(shape = %__MODULE__{name: :plane}, ray) do
+    Plane.local_intersect(shape, ray)
+  end
+
+  def local_intersect(%__MODULE__{name: :test}, ray) do
     ray
   end
 end

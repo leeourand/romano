@@ -1,10 +1,9 @@
 defmodule Romano.Sphere do
   alias Romano.Intersection
-  alias Romano.Matrix
   alias Romano.Shape
   import Romano.Tuple, only: [point: 3]
 
-  def local_normal_at(s, local_point) do
+  def local_normal_at(%Shape{name: :sphere}, local_point) do
     Romano.Tuple.subtract(local_point, point(0, 0, 0))
   end
 
