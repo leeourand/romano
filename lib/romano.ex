@@ -1,11 +1,12 @@
 defmodule Romano do
-  alias Romano.Canvas
   alias Romano.Camera
+  alias Romano.Canvas
   alias Romano.Color
   alias Romano.Intersection
   alias Romano.Light
   alias Romano.Material
   alias Romano.Matrix
+  alias Romano.Pattern
   alias Romano.Ray
   alias Romano.Shape
   alias Romano.Sphere
@@ -43,7 +44,7 @@ defmodule Romano do
           point = Ray.position(r, hit.t)
           normal = Shape.normal_at(hit.object, point)
           eye = multiply(r.direction, -1)
-          color = Material.lighting(hit.object.material, light, point, eye, normal, false)
+          color = Material.lighting(hit.object.material, hit.object, light, point, eye, normal, false)
           {x, y, color}
         end
       end
@@ -59,7 +60,7 @@ defmodule Romano do
 
   def draw_spheres_scene do
     floor = Shape.plane()
-            |> put_in([:material, :color], Color.new(1, 0.9, 0.9))
+            |> put_in([:material, :pattern], Pattern.stripe(Color.new(0, 0, 0), Color.new(1, 1, 1)))
             |> put_in([:material, :specular], 0)
 
     middle = Shape.sphere()

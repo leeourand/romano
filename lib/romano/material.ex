@@ -1,16 +1,23 @@
 defmodule Romano.Material do
   alias Romano.Color
+  alias Romano.Pattern
   alias Romano.Tuple
   alias Romano.World
-  defstruct color: Color.new(1, 1, 1), ambient: 0.1, diffuse: 0.9, specular: 0.9, shininess: 200
+  defstruct color: Color.new(1, 1, 1), ambient: 0.1, diffuse: 0.9, specular: 0.9, shininess: 200, pattern: nil
   use Accessible
 
   def new do
     %__MODULE__{}
   end
 
-  def lighting(material, light, point, eyev, normalv, in_shadow) do
-    effective_color = Color.multiply(material.color, light.intensity)
+  def lighting(material, object, light, point, eyev, normalv, in_shadow) do
+    color = if material.pattern do
+      Pattern.stripe_at_object(material.pattern, object, point)
+    else
+      material.color
+    end
+
+    effective_color = Color.multiply(color, light.intensity)
     lightv = Tuple.subtract(light.position, point)
               |> Tuple.normalize()
     ambient = Color.multiply(effective_color, material.ambient)
@@ -30,7 +37,7 @@ defmodule Romano.Material do
 
   def shade_hit(world, comps) do
     shadowed = World.is_shadowed(world, comps.over_point)
-    lighting(comps.object.material, world.light, comps.over_point, comps.eyev, comps.normalv, shadowed)
+    lighting(comps.object.material, comps.object, world.light, comps.over_point, comps.eyev, comps.normalv, shadowed)
   end
 
   defp calc_diffuse(light_dot_normal, _material_diffuse, _effective_color) when light_dot_normal < 0 do
