@@ -51,9 +51,7 @@ defmodule CameraTest do
     c = Camera.set_transform(c, t)
     r = Camera.ray_for_pixel(c, 100, 50)
     assert about_equal?(r.origin, point(0, 2, -5))
-
-    # TODO: I think this is wrong?
-    # assert r.direction == vector(:math.sqrt(2)/2, 0, -:math.sqrt(2)/2)
+    assert about_equal?(r.direction, vector(:math.sqrt(2)/2, 0, -:math.sqrt(2)/2))
   end
 
   test "rendering a world with a camera" do
