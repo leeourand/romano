@@ -92,6 +92,6 @@ defmodule Romano.Tuple do
   def about_equal?(t1, t2) do
     subtract(t1, t2)
     |> Tuple.to_list
-    |> Enum.all?(fn x -> x < 0.0001 end)
+    |> Enum.all?(fn x -> abs(x) < 0.0001 end)
   end
 end

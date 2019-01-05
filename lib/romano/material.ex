@@ -3,7 +3,16 @@ defmodule Romano.Material do
   alias Romano.Pattern
   alias Romano.Tuple
   alias Romano.World
-  defstruct color: Color.new(1, 1, 1), ambient: 0.1, diffuse: 0.9, specular: 0.9, shininess: 200, pattern: nil
+  alias Romano.Intersection
+  defstruct color: Color.new(1, 1, 1),
+    ambient: 0.1,
+    diffuse: 0.9,
+    specular: 0.9,
+    shininess: 200,
+    pattern: nil,
+    reflective: 0.0,
+    transparency: 0.0,
+    refractive_index: 1.0
   use Accessible
 
   def new do
@@ -35,9 +44,22 @@ defmodule Romano.Material do
     end
   end
 
-  def shade_hit(world, comps) do
+  def shade_hit(world, comps, remaining_reflections \\ 5) do
     shadowed = World.is_shadowed(world, comps.over_point)
-    lighting(comps.object.material, comps.object, world.light, comps.over_point, comps.eyev, comps.normalv, shadowed)
+    surface = lighting(comps.object.material, comps.object, world.light, comps.over_point, comps.eyev, comps.normalv, shadowed)
+    reflected = World.reflected_color(world, comps, remaining_reflections)
+    refracted = World.refracted_color(world, comps, remaining_reflections)
+    material = comps.object.material
+
+    if material.reflective > 0 && material.transparency > 0 do
+      reflectance = Intersection.schlick(comps)
+      Color.multiply(reflected, reflectance)
+      |> Color.add(Color.multiply(refracted, 1 - reflectance))
+      |> Color.add(surface)
+    else
+      Color.add(surface, reflected)
+      |> Color.add(refracted)
+    end
   end
 
   defp calc_diffuse(light_dot_normal, _material_diffuse, _effective_color) when light_dot_normal < 0 do

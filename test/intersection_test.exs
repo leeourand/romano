@@ -2,6 +2,7 @@ defmodule IntersectionTest do
   use ExUnit.Case, async: true
   alias Romano.Intersection
   alias Romano.Shape
+  alias Romano.Sphere
   alias Romano.Ray
   alias Romano.Transformation
   import Romano.Tuple, only: [point: 3, vector: 3, z: 1]
@@ -73,5 +74,77 @@ defmodule IntersectionTest do
     comps = Intersection.prepare_computations(i, r)
     assert z(comps.over_point) < (-Romano.epsilon() / 2)
     assert z(comps.point) > z(comps.over_point)
+  end
+
+  test "precomputing the reflection vector" do
+    shape = Shape.plane()
+    r = Ray.new(point(0, 1, -1), vector(0, -:math.sqrt(2) / 2, :math.sqrt(2)/2))
+    i = Intersection.new(:math.sqrt(2), shape)
+    comps = Intersection.prepare_computations(i, r)
+    assert comps.reflectv == vector(0, :math.sqrt(2)/2, :math.sqrt(2)/2)
+  end
+
+  test "finding n1 and n2 at various intersections" do
+    a = Sphere.glass_sphere()
+        |> Shape.set_transform(Transformation.scale(2, 2, 2))
+        |> put_in([:material, :refractive_index], 1.5)
+    b = Sphere.glass_sphere()
+        |> Shape.set_transform(Transformation.translation(0, 0, -0.25))
+        |> put_in([:material, :refractive_index], 2.0)
+    c = Sphere.glass_sphere()
+        |> Shape.set_transform(Transformation.translation(0, 0, 0.25))
+        |> put_in([:material, :refractive_index], 2.5)
+    r = Ray.new(point(0, 0, -4), vector(0, 0, 1))
+    xs = [Intersection.new(2, a), Intersection.new(2.75, b), Intersection.new(3.25, c), Intersection.new(4.75, b), Intersection.new(5.25, c), Intersection.new(6, a)]
+    [
+      {0, 1.0, 1.5},
+      {1, 1.5, 2.0},
+      {2, 2.0, 2.5},
+      {3, 2.5, 2.5},
+      {4, 2.5, 1.5},
+      {5, 1.5, 1.0}
+    ] |> Enum.each(fn {index, n1, n2} ->
+      comps = Intersection.prepare_computations(Enum.at(xs, index), r, xs)
+      assert comps.n1 == n1
+      assert comps.n2 == n2
+    end)
+  end
+
+  test "the under point is offset below the surface" do
+    r = Ray.new(point(0, 0, -5), vector(0, 0, 1))
+    shape = Sphere.glass_sphere()
+            |> Shape.set_transform(Transformation.translation(0, 0, 1))
+    i = Intersection.new(5, shape)
+    xs = [i]
+    comps = Intersection.prepare_computations(i, r, xs)
+    assert z(comps.under_point) > Romano.epsilon()/2
+    assert z(comps.point) < z(comps.under_point)
+  end
+
+  test "the schlick approximation under total internal reflection" do
+    shape = Sphere.glass_sphere()
+    r = Ray.new(point(0, 0, :math.sqrt(2)/2), vector(0, 1, 0))
+    xs = [Intersection.new(-:math.sqrt(2)/2, shape), Intersection.new(:math.sqrt(2)/2, shape)]
+    comps = Intersection.prepare_computations(Enum.at(xs, 1), r, xs)
+    reflectance = Intersection.schlick(comps)
+    assert reflectance == 1.0
+  end
+
+  test "the schlick approximation with a perpendicular viewing angle" do
+    shape = Sphere.glass_sphere()
+    r = Ray.new(point(0, 0, 0), vector(0, 1, 0))
+    xs = [Intersection.new(-1, shape), Intersection.new(1, shape)]
+    comps = Intersection.prepare_computations(Enum.at(xs, 1), r, xs)
+    reflectance = Intersection.schlick(comps)
+    assert Float.round(reflectance, 5) == 0.04
+  end
+
+  test "the schlick approximation with a small angle and n2 > n1" do
+    shape = Sphere.glass_sphere()
+    r = Ray.new(point(0, 0.99, -2), vector(0, 0, 1))
+    xs = [Intersection.new(1.8589, shape)]
+    comps = Intersection.prepare_computations(Enum.at(xs, 0), r, xs)
+    reflectance = Intersection.schlick(comps)
+    assert Float.round(reflectance, 5) == 0.48873
   end
 end

@@ -4,6 +4,7 @@ defmodule WorldTest do
   alias Romano.Intersection
   alias Romano.Light
   alias Romano.Material
+  alias Romano.Pattern
   alias Romano.Ray
   alias Romano.Shape
   alias Romano.Transformation
@@ -119,5 +120,143 @@ defmodule WorldTest do
     comps = Intersection.prepare_computations(i, r)
     c = Material.shade_hit(w, comps)
     assert c == Color.new(0.1, 0.1, 0.1)
+  end
+
+  test "the reflected color for a non-reflective material" do
+    w = World.default()
+        |> put_in([:objects, Access.at(1), :material, :ambient], 1)
+    r = Ray.new(point(0, 0, 0), vector(0, 0, 1))
+    shape = Enum.at(w.objects, 1)
+    i = Intersection.new(1, shape)
+    comps = Intersection.prepare_computations(i, r)
+    color = World.reflected_color(w, comps)
+    assert color == Color.new(0, 0, 0)
+  end
+
+  test "the reflected color for a reflective material" do
+    shape = Shape.plane()
+            |> Shape.set_material(%{Material.new() | reflective: 0.5})
+            |> Shape.set_transform(Transformation.translation(0, -1, 0))
+    w = World.default()
+        |> update_in([:objects], fn objects -> objects ++ [shape] end)
+
+    r = Ray.new(point(0, 0, -3), vector(0, -:math.sqrt(2)/2, :math.sqrt(2)/2))
+    i = Intersection.new(:math.sqrt(2), shape)
+    comps = Intersection.prepare_computations(i, r)
+    color = World.reflected_color(w, comps)
+    assert Romano.Tuple.about_equal?(color, Color.new(0.19032, 0.2379, 0.14274))
+  end
+
+  test "shade_hit() for a reflective material" do
+    shape = Shape.plane()
+            |> Shape.set_material(%{Material.new() | reflective: 0.5})
+            |> Shape.set_transform(Transformation.translation(0, -1, 0))
+    w = World.default()
+        |> update_in([:objects], fn objects -> objects ++ [shape] end)
+
+    r = Ray.new(point(0, 0, -3), vector(0, -:math.sqrt(2)/2, :math.sqrt(2)/2))
+    i = Intersection.new(:math.sqrt(2), shape)
+    comps = Intersection.prepare_computations(i, r)
+    color = Material.shade_hit(w, comps)
+    assert Romano.Tuple.about_equal?(color, Color.new(0.87677, 0.92436, 0.82918))
+  end
+
+  test "color_at() with mutually reflectie surfaces" do
+    w = %{World.new() | light: Light.point_light(point(0, 0, 0), Color.new(1, 1, 1))}
+    lower  = Shape.plane()
+             |> Shape.set_material(%{Material.new() | reflective: 1 })
+             |> Shape.set_transform(Transformation.translation(0, -1, 0))
+    upper  = Shape.plane()
+             |> Shape.set_material(%{Material.new() | reflective: 1 })
+             |> Shape.set_transform(Transformation.translation(0, 1, 0))
+    w = %{w | objects: [lower, upper]}
+    r = Ray.new(point(0, 0, 0), vector(0, 1, 0))
+    assert World.color_at(w, r)
+  end
+
+  test "the refracted color with an opaque surface" do
+    w = World.default()
+    shape = Enum.at(w.objects, 0)
+    r = Ray.new(point(0, 0, -5), vector(0, 0, 1))
+    xs = [Intersection.new(4, shape), Intersection.new(6, shape)]
+    comps = Intersection.prepare_computations(Enum.at(xs, 0), r, xs)
+    c = World.refracted_color(w, comps, 5)
+    assert c == Color.new(0, 0, 0)
+  end
+
+  test "the refracted color at the maximum recursive depth" do
+    w = World.default()
+        |> put_in([:objects, Access.at(0), :material, :transparency], 1.0)
+        |> put_in([:objects, Access.at(0), :material, :refractive_index], 1.5)
+    shape = Enum.at(w.objects, 0)
+    r = Ray.new(point(0, 0, -5), vector(0, 0, 1))
+    xs = [Intersection.new(4, shape), Intersection.new(6, shape)]
+    comps = Intersection.prepare_computations(Enum.at(xs, 0), r, xs)
+    c = World.refracted_color(w, comps, 0)
+    assert c == Color.new(0, 0, 0)
+  end
+
+  test "the refracted color under total internal reflection" do
+    w = World.default()
+        |> put_in([:objects, Access.at(0), :material, :transparency], 1.0)
+        |> put_in([:objects, Access.at(0), :material, :refractive_index], 1.5)
+    shape = Enum.at(w.objects, 0)
+    r = Ray.new(point(0, 0, :math.sqrt(2)/2), vector(0, 1, 0))
+    xs = [Intersection.new(-:math.sqrt(2)/2, shape), Intersection.new(:math.sqrt(2)/2, shape)]
+    comps = Intersection.prepare_computations(Enum.at(xs, 1), r, xs)
+    c = World.refracted_color(w, comps, 5)
+    assert c == Color.new(0, 0, 0)
+  end
+
+  test "the refracted color with a refracted ray" do
+    w = World.default()
+        |> put_in([:objects, Access.at(0), :material, :ambient], 1.0)
+        |> put_in([:objects, Access.at(0), :material, :pattern], Pattern.test())
+        |> put_in([:objects, Access.at(1), :material, :transparency], 1.0)
+        |> put_in([:objects, Access.at(1), :material, :refractive_index], 1.5)
+    a = Enum.at(w.objects, 0)
+    b = Enum.at(w.objects, 1)
+    r = Ray.new(point(0, 0, 0.1), vector(0, 1, 0))
+    xs = [Intersection.new(-0.98999, a), Intersection.new(-0.4899, b), Intersection.new(0.4899, b), Intersection.new(0.9899, a)]
+    comps = Intersection.prepare_computations(Enum.at(xs, 2), r, xs)
+    c = World.refracted_color(w, comps, 5)
+    assert Romano.Tuple.about_equal?(c, Color.new(0, 0.99888, 0.04725))
+  end
+
+  test "shade_hit() with a transparent material" do
+    floor = Shape.plane()
+            |> Shape.set_transform(Transformation.translation(0, -1, 0))
+            |> put_in([:material, :transparency], 0.5)
+            |> put_in([:material, :refractive_index], 1.5)
+    ball = Shape.sphere()
+           |> Shape.set_transform(Transformation.translation(0, -3.5, -0.5))
+           |> put_in([:material, :color], Color.new(1, 0, 0))
+           |> put_in([:material, :ambient], 0.5)
+    w = World.default()
+        |> update_in([:objects], fn objects -> objects ++ [floor, ball] end)
+    r = Ray.new(point(0, 0, -3), vector(0, -:math.sqrt(2)/2, :math.sqrt(2)/2))
+    xs = [Intersection.new(:math.sqrt(2), floor)]
+    comps = Intersection.prepare_computations(Enum.at(xs, 0), r, xs)
+    c = Material.shade_hit(w, comps, 5)
+    assert Romano.Tuple.about_equal?(c, Color.new(0.93642, 0.68642, 0.68642))
+  end
+
+  test "shade_hit() with a reflective, transparent material" do
+    floor = Shape.plane()
+            |> Shape.set_transform(Transformation.translation(0, -1, 0))
+            |> put_in([:material, :reflective], 0.5)
+            |> put_in([:material, :transparency], 0.5)
+            |> put_in([:material, :refractive_index], 1.5)
+    ball = Shape.sphere()
+           |> Shape.set_transform(Transformation.translation(0, -3.5, -0.5))
+           |> put_in([:material, :color], Color.new(1, 0, 0))
+           |> put_in([:material, :ambient], 0.5)
+    w = World.default()
+        |> update_in([:objects], fn objects -> objects ++ [floor, ball] end)
+    r = Ray.new(point(0, 0, -3), vector(0, -:math.sqrt(2)/2, :math.sqrt(2)/2))
+    xs = [Intersection.new(:math.sqrt(2), floor)]
+    comps = Intersection.prepare_computations(Enum.at(xs, 0), r, xs)
+    color = Material.shade_hit(w, comps, 5)
+    assert Romano.Tuple.about_equal?(color, Color.new(0.93391, 0.69643, 0.69243))
   end
 end

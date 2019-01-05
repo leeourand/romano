@@ -5,6 +5,10 @@ defmodule Romano.Computations do
     over_point: nil,
     eyev: nil,
     normalv: nil,
-    inside: false
+    inside: false,
+    reflectv: nil,
+    n1: nil,
+    n2: nil,
+    under_point: nil
   use Accessible
 end

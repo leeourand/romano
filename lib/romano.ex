@@ -62,6 +62,7 @@ defmodule Romano do
             |> put_in([:material, :pattern], Pattern.checkers(Color.new(1, 1, 1), Color.new(0.95, 0.95, 0.95))
                                              |> Pattern.set_transform(Transformation.rotation_y(:math.pi() /6)))
             |> put_in([:material, :specular], 0)
+            |> put_in([:material, :reflective], 0.3)
 
     middle = Shape.sphere()
              |> Shape.set_transform(Transformation.translation(-0.5, 1, 0.5)
@@ -80,6 +81,7 @@ defmodule Romano do
                                              |> Pattern.set_transform(Transformation.scale(2, 2, 2)))
             |> put_in([:material, :diffuse], 0.7)
             |> put_in([:material, :specular], 0.3)
+            |> put_in([:material, :reflective], 0.3)
 
     left = Shape.sphere()
            |> Shape.set_transform(Transformation.translation(-1.5, 0.33, -0.75)
@@ -89,10 +91,23 @@ defmodule Romano do
                                                                      |> Matrix.multiply(Transformation.scale(0.4, 0.4, 0.4))))
            |> put_in([:material, :diffuse], 0.7)
            |> put_in([:material, :specular], 0.3)
+           |> put_in([:material, :reflective], 0.3)
+
+    front = Shape.sphere()
+           |> Shape.set_transform(Transformation.translation(-0.6, 0.6, -0.7)
+                                  |> Matrix.multiply(Transformation.scale(0.6, 0.6, 0.6)))
+           |> put_in([:material, :color], Color.new(0.5, 0.5, 0.5))
+           |> put_in([:material, :ambient], 0.00)
+           |> put_in([:material, :diffuse], 0.00)
+           |> put_in([:material, :shininess], 300)
+           |> put_in([:material, :specular], 1.0)
+           |> put_in([:material, :reflective], 0.9)
+           |> put_in([:material, :transparency], 1.0)
+           |> put_in([:material, :refractive_index], 1.5)
 
     world = World.new
             |> put_in([:light], Light.point_light(point(-10, 10, -10), Color.new(1, 1, 1)))
-            |> put_in([:objects], [floor, middle, right, left])
+            |> put_in([:objects], [floor, middle, right, left, front])
 
     camera = Camera.new(600, 400, :math.pi() / 3)
              |> put_in([:transform], Transformation.view_transform(point(0, 1.5, -5), point(0, 1, 0), vector(0, 1, 0)))

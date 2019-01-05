@@ -86,4 +86,15 @@ defmodule MaterialTest do
     assert c1 == Color.new(1, 1, 1)
     assert c2 == Color.new(0, 0, 0)
   end
+
+  test "reflectivity for the default material" do
+    m = Material.new()
+    assert m.reflective == 0.0
+  end
+
+  test "transparency and refractive index for the default material" do
+    m = Material.new
+    assert m.transparency == 0.0
+    assert m.refractive_index == 1.0
+  end
 end

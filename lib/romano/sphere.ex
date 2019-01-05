@@ -1,5 +1,6 @@
 defmodule Romano.Sphere do
   alias Romano.Intersection
+  alias Romano.Material
   alias Romano.Shape
   import Romano.Tuple, only: [point: 3]
 
@@ -23,4 +24,10 @@ defmodule Romano.Sphere do
         []
     end
   end
+
+  def glass_sphere() do
+    Shape.sphere()
+    |> Shape.set_material(%{Material.new() | transparency: 1.0, refractive_index: 1.5})
+  end
+
 end
