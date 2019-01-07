@@ -53,9 +53,10 @@ defmodule Romano.Material do
 
     if material.reflective > 0 && material.transparency > 0 do
       reflectance = Intersection.schlick(comps)
-      Color.multiply(reflected, reflectance)
-      |> Color.add(Color.multiply(refracted, 1 - reflectance))
-      |> Color.add(surface)
+      reflected_reflactance = Color.multiply(reflected, reflectance)
+      refracted_reflectance = Color.multiply(refracted, 1 - reflectance)
+      Color.add(surface, reflected_reflactance)
+      |> Color.add(refracted_reflectance)
     else
       Color.add(surface, reflected)
       |> Color.add(refracted)

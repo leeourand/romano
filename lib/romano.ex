@@ -57,6 +57,114 @@ defmodule Romano do
     File.write("out.ppm", data)
   end
 
+  def draw_transparency_scene do
+    camera = Camera.new(400, 200, 1.152)
+             |> Camera.set_transform(Transformation.view_transform(point(-2.6, 1.5, -3.9), point(-0.6, 1, -0.8), vector(0, 1, 0)))
+
+    wall_material = %{Material.new() |
+      pattern: Pattern.stripe(Color.new(0.45, 0.45, 0.45), Color.new(0.55, 0.55, 0.55)) |> Pattern.set_transform(Transformation.scale(0.25, 0.25, 0.25) |> Matrix.multiply(Transformation.rotation_y(1.5708))),
+      ambient: 0,
+      diffuse: 0.4,
+      specular: 0,
+      reflective: 0.3 }
+
+    floor = Shape.plane()
+            |> Shape.set_transform(Transformation.rotation_y(0.31415))
+            |> put_in([:material, :pattern], Pattern.checkers(Color.new(0.35, 0.35, 0.35), Color.new(0.65, 0.65, 0.65)))
+            |> put_in([:material, :specular], 0)
+            |> put_in([:material, :reflective], 0.4)
+
+    ceiling = Shape.plane()
+              |> Shape.set_transform(Transformation.translation(0, 5, 0))
+              |> put_in([:material, :color], Color.new(0.8, 0.8, 0.8))
+              |> put_in([:material, :ambient], 0.3)
+              |> put_in([:material, :specular], 0)
+
+    west_wall = Shape.plane()
+                |> Shape.set_transform(Transformation.translation(-5, 0, 0)
+                                       |> Matrix.multiply(Transformation.rotation_z(1.5708))
+                                       |> Matrix.multiply(Transformation.rotation_y(1.5708)))
+                |> put_in([:material], wall_material)
+
+    east_wall = Shape.plane()
+                |> Shape.set_transform(Transformation.translation(5, 0, 0)
+                                       |> Matrix.multiply(Transformation.rotation_z(1.5708))
+                                       |> Matrix.multiply(Transformation.rotation_y(1.5708)))
+                |> put_in([:material], wall_material)
+
+    north_wall = Shape.plane()
+                 |> Shape.set_transform(Transformation.translation(0, 0, 5)
+                                        |> Matrix.multiply(Transformation.rotation_x(1.5708)))
+                 |> put_in([:material], wall_material)
+
+    south_wall = Shape.plane()
+                 |> Shape.set_transform(Transformation.translation(0, 0, -5)
+                                        |> Matrix.multiply(Transformation.rotation_x(1.5708)))
+                 |> put_in([:material], wall_material)
+
+    red_sphere = Shape.sphere()
+                 |> Shape.set_transform(Transformation.translation(-0.6, 1, 0.6))
+                 |> put_in([:material, :color], Color.new(1, 0.3, 0.2))
+                 |> put_in([:material, :specular], 0.4)
+                 |> put_in([:material, :shininess], 5)
+
+    blue_sphere = Shape.sphere()
+                 |> Shape.set_transform(Transformation.translation(0.6, 0.7, -0.6)
+                                        |> Matrix.multiply(Transformation.scale(0.7, 0.7, 0.7)))
+                 |> put_in([:material, :color], Color.new(0.0, 0.0, 0.2))
+                 |> put_in([:material, :ambient], 0.0)
+                 |> put_in([:material, :diffuse], 0.4)
+                 |> put_in([:material, :specular], 0.9)
+                 |> put_in([:material, :shininess], 300)
+                 |> put_in([:material, :reflective], 0.9)
+                 |> put_in([:material, :transparency], 0.9)
+                 |> put_in([:material, :refractive_index], 2.0)
+
+    green_sphere = Shape.sphere()
+                   |> Shape.set_transform(Transformation.translation(-0.7, 0.5, -0.8)
+                                          |> Matrix.multiply(Transformation.scale(0.5, 0.5, 0.5)))
+                   |> put_in([:material, :color], Color.new(0, 0.2, 0))
+                   |> put_in([:material, :ambient], 0.0)
+                   |> put_in([:material, :diffuse], 0.4)
+                   |> put_in([:material, :specular], 0.9)
+                   |> put_in([:material, :shininess], 300)
+                   |> put_in([:material, :reflective], 0.9)
+                   |> put_in([:material, :transparency], 0.9)
+                   |> put_in([:material, :refractive_index], 2.0)
+
+    background_ball1 = Shape.sphere()
+                       |> Shape.set_transform(Transformation.translation(4.6, 0.4, 1)
+                                              |> Matrix.multiply(Transformation.scale(0.4, 0.4, 0.4)))
+                       |> put_in([:material, :color], Color.new(0.8, 0.5, 0.3))
+                       |> put_in([:material, :shininess], 50)
+
+    background_ball2 = Shape.sphere()
+                       |> Shape.set_transform(Transformation.translation(4.7, 0.3, 0.4)
+                                              |> Matrix.multiply(Transformation.scale(0.3, 0.3, 0.3)))
+                       |> put_in([:material, :color], Color.new(0.9, 0.4, 0.5))
+                       |> put_in([:material, :shininess], 50)
+
+    background_ball3 = Shape.sphere()
+                       |> Shape.set_transform(Transformation.translation(-1, 0.5, 4.5)
+                                              |> Matrix.multiply(Transformation.scale(0.5, 0.5, 0.5)))
+                       |> put_in([:material, :color], Color.new(0.4, 0.9, 0.6))
+                       |> put_in([:material, :shininess], 50)
+
+    background_ball4 = Shape.sphere()
+                       |> Shape.set_transform(Transformation.translation(-1.7, 0.3, 4.7)
+                                              |> Matrix.multiply(Transformation.scale(0.3, 0.3, 0.3)))
+                       |> put_in([:material, :color], Color.new(0.4, 0.6, 0.9))
+                       |> put_in([:material, :shininess], 50)
+
+    world = World.new
+            |> put_in([:light], Light.point_light(point(-4.9, 4.9, -1), Color.new(1, 1, 1)))
+            |> put_in([:objects], [floor, ceiling, west_wall, east_wall, north_wall, south_wall, red_sphere, green_sphere, blue_sphere, background_ball1, background_ball2, background_ball3, background_ball4])
+
+    data = Camera.render(camera, world)
+           |> Canvas.to_ppm
+    File.write("world_out.ppm", data)
+  end
+
   def draw_spheres_scene do
     floor = Shape.plane()
             |> put_in([:material, :pattern], Pattern.checkers(Color.new(1, 1, 1), Color.new(0.95, 0.95, 0.95))

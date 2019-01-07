@@ -64,7 +64,7 @@ defmodule Romano.World do
                   |> subtract(multiply(comps.eyev, n_ratio))
       refract_ray = Ray.new(comps.under_point, direction)
       color_at(world, refract_ray, remaining_refractions - 1)
-              |> Color.multiply(comps.object.material.transparency)
+      |> Color.multiply(comps.object.material.transparency)
     end
   end
 
