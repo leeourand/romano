@@ -38,7 +38,8 @@ defmodule Romano.Intersection do
       %{comps |
         inside: true,
         normalv: normalv,
-        over_point: multiply(normalv, Romano.epsilon()) |> add(comps.point)
+        over_point: multiply(normalv, Romano.epsilon()) |> add(comps.point),
+        under_point: subtract(comps.point, multiply(normalv, Romano.epsilon()))
       }
     else
       comps
