@@ -17,6 +17,10 @@ defmodule Romano do
     0.000001
   end
 
+  def huge_number do
+    999999999999999999999999999999
+  end
+
   def draw_circle_scene do
     canvas_pixels = 100
     canvas = Canvas.new(canvas_pixels, canvas_pixels)
